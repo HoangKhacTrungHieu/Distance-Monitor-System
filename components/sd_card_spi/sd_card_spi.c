@@ -20,12 +20,12 @@ static const char *TAG = "example";
 
 #define MOUNT_POINT "/sdcard"
 
-// SPI pin assignments for SD card (ESP32-C3 SPI2/FSPI)
+// SPI pin assignments for SD card — match your hardware wiring
 // Adjust these to match your hardware wiring.
-#define PIN_NUM_MISO  2
-#define PIN_NUM_MOSI  7
-#define PIN_NUM_CLK   6
-#define PIN_NUM_CS    10
+#define PIN_NUM_MISO  19
+#define PIN_NUM_MOSI  23
+#define PIN_NUM_CLK   18
+#define PIN_NUM_CS    5
 
 static esp_err_t s_example_write_file(const char *path, char *data)
 {
