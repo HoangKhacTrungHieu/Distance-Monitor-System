@@ -1,4 +1,4 @@
-# Install script for directory: D:/ESP32C3/Espressif/frameworks/esp-idf-v5.5/components/bootloader/subproject
+# Install script for directory: C:/Espressif/frameworks/esp-idf-v5.4.2/components/bootloader/subproject
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -34,12 +34,12 @@ endif()
 
 # Set path to fallback-tool for dependency-resolution.
 if(NOT DEFINED CMAKE_OBJDUMP)
-  set(CMAKE_OBJDUMP "D:/ESP32C3/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
+  set(CMAKE_OBJDUMP "C:/Espressif/tools/riscv32-esp-elf/esp-14.2.0_20241119/riscv32-esp-elf/bin/riscv32-esp-elf-objdump.exe")
 endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for the subdirectory.
-  include("D:/ESP32C3/Espressif/frameworks/Smart-Distance-Logger-Display-ESP32/build/bootloader/esp-idf/cmake_install.cmake")
+  include("D:/Smart-Distance-Logger-Display-ESP32/build/bootloader/esp-idf/cmake_install.cmake")
 endif()
 
 if(CMAKE_INSTALL_COMPONENT)
@@ -57,6 +57,6 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-  file(WRITE "D:/ESP32C3/Espressif/frameworks/Smart-Distance-Logger-Display-ESP32/build/bootloader/${CMAKE_INSTALL_MANIFEST}"
+  file(WRITE "D:/Smart-Distance-Logger-Display-ESP32/build/bootloader/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
 endif()

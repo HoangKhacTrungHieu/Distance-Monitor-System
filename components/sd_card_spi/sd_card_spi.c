@@ -13,10 +13,6 @@
 #include <sys/stat.h>
 #include "esp_vfs_fat.h"
 #include "sdmmc_cmd.h"
-#include "sd_test_io.h"
-#if SOC_SDMMC_IO_POWER_EXTERNAL
-#include "sd_pwr_ctrl_by_on_chip_ldo.h"
-#endif
 
 #define EXAMPLE_MAX_CHAR_SIZE    64
 
@@ -24,36 +20,12 @@ static const char *TAG = "example";
 
 #define MOUNT_POINT "/sdcard"
 
-#ifdef CONFIG_EXAMPLE_DEBUG_PIN_CONNECTIONS
-const char* names[] = {"CLK ", "MOSI", "MISO", "CS  "};
-const int pins[] = {CONFIG_EXAMPLE_PIN_CLK,
-                    CONFIG_EXAMPLE_PIN_MOSI,
-                    CONFIG_EXAMPLE_PIN_MISO,
-                    CONFIG_EXAMPLE_PIN_CS};
-
-const int pin_count = sizeof(pins)/sizeof(pins[0]);
-#if CONFIG_EXAMPLE_ENABLE_ADC_FEATURE
-const int adc_channels[] = {CONFIG_EXAMPLE_ADC_PIN_CLK,
-                            CONFIG_EXAMPLE_ADC_PIN_MOSI,
-                            CONFIG_EXAMPLE_ADC_PIN_MISO,
-                            CONFIG_EXAMPLE_ADC_PIN_CS};
-#endif //CONFIG_EXAMPLE_ENABLE_ADC_FEATURE
-
-pin_configuration_t config = {
-    .names = names,
-    .pins = pins,
-#if CONFIG_EXAMPLE_ENABLE_ADC_FEATURE
-    .adc_channels = adc_channels,
-#endif
-};
-#endif //CONFIG_EXAMPLE_DEBUG_PIN_CONNECTIONS
-
-// Pin assignments can be set in menuconfig, see "SD SPI Example Configuration" menu.
-// You can also change the pin assignments here by changing the following 4 lines.
-#define PIN_NUM_MISO  CONFIG_EXAMPLE_PIN_MISO
-#define PIN_NUM_MOSI  CONFIG_EXAMPLE_PIN_MOSI
-#define PIN_NUM_CLK   CONFIG_EXAMPLE_PIN_CLK
-#define PIN_NUM_CS    CONFIG_EXAMPLE_PIN_CS
+// SPI pin assignments for SD card (ESP32-C3 SPI2/FSPI)
+// Adjust these to match your hardware wiring.
+#define PIN_NUM_MISO  2
+#define PIN_NUM_MOSI  7
+#define PIN_NUM_CLK   6
+#define PIN_NUM_CS    10
 
 static esp_err_t s_example_write_file(const char *path, char *data)
 {
@@ -99,11 +71,7 @@ bool sdcard_init(void)
     // If format_if_mount_failed is set to true, SD card will be partitioned and
     // formatted in case when mounting fails.
     esp_vfs_fat_sdmmc_mount_config_t mount_config = {
-#ifdef CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED
-        .format_if_mount_failed = true,
-#else
         .format_if_mount_failed = false,
-#endif // EXAMPLE_FORMAT_IF_MOUNT_FAILED
         .max_files = 5,
         .allocation_unit_size = 16 * 1024
     };
@@ -122,22 +90,7 @@ bool sdcard_init(void)
     // Example: for fixed frequency of 10MHz, use host.max_freq_khz = 10000;
     sdmmc_host_t host = SDSPI_HOST_DEFAULT();
 
-    // For SoCs where the SD power can be supplied both via an internal or external (e.g. on-board LDO) power supply.
-    // When using specific IO pins (which can be used for ultra high-speed SDMMC) to connect to the SD card
-    // and the internal LDO power supply, we need to initialize the power supply first.
-#if CONFIG_EXAMPLE_SD_PWR_CTRL_LDO_INTERNAL_IO
-    sd_pwr_ctrl_ldo_config_t ldo_config = {
-        .ldo_chan_id = CONFIG_EXAMPLE_SD_PWR_CTRL_LDO_IO_ID,
-    };
-    sd_pwr_ctrl_handle_t pwr_ctrl_handle = NULL;
 
-    ret = sd_pwr_ctrl_new_on_chip_ldo(&ldo_config, &pwr_ctrl_handle);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to create a new on-chip LDO power control driver");
-        return;
-    }
-    host.pwr_ctrl_handle = pwr_ctrl_handle;
-#endif
 
     spi_bus_config_t bus_cfg = {
         .mosi_io_num = PIN_NUM_MOSI,
@@ -166,13 +119,10 @@ bool sdcard_init(void)
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount filesystem. "
-                     "If you want the card to be formatted, set the CONFIG_EXAMPLE_FORMAT_IF_MOUNT_FAILED menuconfig option.");
+                     "Format the card or check the filesystem.");
         } else {
             ESP_LOGE(TAG, "Failed to initialize the card (%s). "
                      "Make sure SD card lines have pull-up resistors in place.", esp_err_to_name(ret));
-#ifdef CONFIG_EXAMPLE_DEBUG_PIN_CONNECTIONS
-            check_sd_card_pins(&config, pin_count);
-#endif
         }
         return false;
     }
